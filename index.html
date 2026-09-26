@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Camera & Location Demo</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .box {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.1);
+    }
+
+    button {
+      padding: 12px 18px;
+      margin: 8px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    #cameraBtn {
+      background: #1976d2;
+      color: white;
+    }
+
+    #locationBtn {
+      background: #388e3c;
+      color: white;
+    }
+
+    video {
+      width: 100%;
+      max-width: 500px;
+      margin-top: 15px;
+      border-radius: 10px;
+      background: black;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eee;
+      border-radius: 10px;
+      text-align: left;
+      word-break: break-word;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <h1>📷 Camera & 📍 Location</h1>
+
+  <p>
+    Ye demo browser permission ke through aapke
+    <b>camera</b> aur <b>location</b> ko access karta hai.
+  </p>
+
+  <button id="cameraBtn">
+    📷 Camera Start
+  </button>
+
+  <button id="locationBtn">
+    📍 Get Location
+  </button>
+
+  <video id="camera" autoplay playsinline></video>
+
+  <div id="result">
+    Result yahan dikhega...
+  </div>
+
+</div>
+
+<script>
+
+const cameraBtn = document.getElementById("cameraBtn");
+const locationBtn = document.getElementById("locationBtn");
+const camera = document.getElementById("camera");
+const result = document.getElementById("result");
+
+
+// ==========================
+// CAMERA ACCESS
+// ==========================
+
+cameraBtn.addEventListener("click", async () => {
+
+  try {
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false
+    });
+
+    camera.srcObject = stream;
+
+    result.innerHTML = `
+      <b>✅ Camera Access Granted</b><br>
+      Camera successfully started.
+    `;
+
+  } catch (error) {
+
+    result.innerHTML = `
+      <b>❌ Camera Access Failed</b><br>
+      ${error.message}
+    `;
+
+  }
+
+});
+
+
+// ==========================
+// LOCATION ACCESS
+// ==========================
+
+locationBtn.addEventListener("click", () => {
+
+  if (!navigator.geolocation) {
+
+    result.innerHTML =
+      "❌ Browser location support nahi karta.";
+
+    return;
+  }
+
+  result.innerHTML = "📍 Location permission maangi ja rahi hai...";
+
+  navigator.geolocation.getCurrentPosition(
+
+    (position) => {
+
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const accuracy = position.coords.accuracy;
+
+      result.innerHTML = `
+        <b>✅ Location Access Granted</b>
+
+        <br><br>
+
+        Latitude:
+        ${latitude}
+
+        <br>
+
+        Longitude:
+        ${longitude}
+
+        <br>
+
+        Accuracy:
+        ${Math.round(accuracy)} meters
+
+        <br><br>
+
+        <a
+          href="https://www.google.com/maps?q=${latitude},${longitude}"
+          target="_blank">
+          🗺️ Open Location in Google Maps
+        </a>
+      `;
+
+    },
+
+    (error) => {
+
+      let message = "";
+
+      switch (error.code) {
+
+        case error.PERMISSION_DENIED:
+          message = "Location permission deny kar di gayi.";
+          break;
+
+        case error.POSITION_UNAVAILABLE:
+          message = "Location available nahi hai.";
+          break;
+
+        case error.TIMEOUT:
+          message = "Location request timeout ho gaya.";
+          break;
+
+        default:
+          message = "Unknown location error.";
+      }
+
+      result.innerHTML = `
+        <b>❌ Location Access Failed</b><br>
+        ${message}
+      `;
+
+    },
+
+    {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    }
+
+  );
+
+});
+
+</script>
+
+</body>
+</html>
